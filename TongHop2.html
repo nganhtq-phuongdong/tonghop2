@@ -294,6 +294,10 @@ textarea{font-size:1.3rem}
 .t td.hz{white-space:normal}
 input.blank{width:6.5em;max-width:100%;box-sizing:border-box}
 
+.blank2{display:inline-block;min-width:3.5rem;border-bottom:3px solid var(--blue);background:var(--blue2);border-radius:8px 8px 0 0;text-align:center;color:var(--mute,#888);font-size:1.2rem}
+#tabs button[data-tab="wb"]{display:none}
+[data-dmsg]{color:var(--green,#14864f)}
+
 </style>
 </head>
 <body>
@@ -2424,13 +2428,13 @@ function exHTML(x,id){
   const items=x.items||[];
   if(x.type==='pinyin')h+=`<div class="${x.pair?'pairs':''}">`+items.map((it,i)=>`<div class="it" ${x.pair?'style="border:1px solid var(--line);border-radius:10px;padding:6px 10px"':''}><span class="zhs" style="font-size:22px">${esc(it[0])}</span> <input class="inp" data-i="${i}" autocomplete="off" autocapitalize="off" spellcheck="false"> <span class="fb"></span><div class="key">${esc(it[1])}</div></div>`).join('')+'</div>';
   if(x.type==='colloc')h+=`<div class="pairs">`+items.map((it,i)=>`<div class="it" style="border:1px solid var(--line);border-radius:10px;padding:6px 10px"><span class="zhs" style="font-size:20px">${esc(it[0])}</span> <span class="py sm">${esc(it[1])}</span> <input class="inp" style="width:110px" data-i="${i}"> <span class="fb"></span><div class="key">${esc(it[2].join(' / '))}</div></div>`).join('')+'</div>';
-  if(x.type==='fill')h+=items.map((it,i)=>{let k=0;const s=it.s.split('__').map(t=>zh(t).replace(/\u3000+(?=[A-D](?:<span class="nw">)?[（：])/g,'<br>')).join('__').replace(/__/g,()=>{const j=k++;const ob=it.o||x.bank;return ob?`<select class="blank" data-i="${i}" data-k="${j}"><option value=""></option>${ob.map(b=>`<option>${esc(b)}</option>`).join('')}</select>`:`<input class="blank" data-i="${i}" data-k="${j}">`});
+  if(x.type==='fill')h+=items.map((it,i)=>{let k=0;const s=it.s.split('__').map(t=>zh(t).replace(/\u3000+(?=[A-D](?:<span class="nw">)?[（：])/g,'<br>')).join('__').replace(/__/g,()=>{const j=k++;const ob=it.o||x.bank;if(it.o&&j>=it.a.length)return '<span class="blank2">＿＿</span>';return ob?`<select class="blank" data-i="${i}" data-k="${j}"><option value=""></option>${ob.map(b=>`<option>${esc(b)}</option>`).join('')}</select>`:`<input class="blank" data-i="${i}" data-k="${j}">`});
     return `<div class="it"><div class="zhs">${i+1}. ${s}</div><span class="fb"></span><div class="key">${it.a.map(a=>a.join(' / ')).join(' ; ')}</div></div>`}).join('');
   if(x.type==='order')h+=items.map((it,i)=>{const toks=it.t.split('/');return `<div class="it" data-i="${i}"><div><b>${i+1}.</b> ${shuffle(toks.map((t,j)=>`<span class="tok" data-j="${j}">${esc(t)}</span>`)).join('')}</div>${it.gl?`<div class="mute sm">${esc(it.gl)}</div>`:''}<div class="built"></div><span class="fb"></span><div class="key">${it.a.map(esc).join('<br>')}${it.note?`<div class="mute sm">${esc(it.note)}</div>`:''}</div></div>`}).join('');
   if(x.type==='open')h+=items.map((it,i)=>`<div class="it"><div class="zhs">${i+1}. ${zh(it.q).replace(/\u3000+(?=[A-D](?:<span class="nw">)?[（：])/g,'<br>')} ${it.w?`<span class="chip">（${esc(it.w)}）</span>`:''} ${/[\u4e00-\u9fff]/.test(it.q)?spk(it.q.replace(/＿+/g,'')):''}</div><textarea data-i="${i}" placeholder="${x.tr?'Viết câu dịch tiếng Trung…':'Viết câu tiếng Trung…'}"></textarea>
      <div class="row"><button class="btn sm" data-chk="${i}">Kiểm tra</button><span class="fb"></span></div><div class="key">${it.a.map(a=>zh(a)+' '+spk(a)).join('<br>')}</div><div class="selfmark" hidden><span class="sm mute">Tự đánh giá:</span><button class="btn sm" data-sm="1">✓ Đúng ý</button><button class="btn sm" data-sm="0">✗ Chưa đúng</button></div></div>`).join('');
   if(x.type==='match')h+=x.sets.map((s,si)=>`<div class="it" data-si="${si}"><div class="mgrid top ${s.wide?'wide':''}">${s.top.map((c,j)=>`<button data-j="${j}">${esc(c)}</button>`).join('')}</div><div class="mgrid bot ${s.wide?'wide':''}">${s.bot.map((c,j)=>`<button data-j="${j}">${esc(c)}</button>`).join('')}</div><div class="found zhs"></div><span class="fb"></span><div class="key">${s.a.join('、')}</div></div>`).join('');
-  h+=`<div class="row" style="margin-top:10px"><button class="btn pri" data-grade>Chấm điểm</button><button class="btn" data-key>Đáp án</button><button class="btn" data-reset>Làm lại</button><span class="score"></span><span class="mute sm" data-best></span></div></div>`;
+  h+=`<div class="row" style="margin-top:10px"><button class="btn pri" data-grade>Chấm điểm</button><button class="btn" data-key>Đáp án</button><button class="btn" data-reset>Làm lại</button><button class="btn" data-draft>💾 Lưu nháp</button><span class="score"></span><span class="mute sm" data-dmsg></span><span class="mute sm" data-best></span></div></div>`;
   return h;
 }
 function bindEx(x,id,L){
@@ -2438,7 +2442,7 @@ function bindEx(x,id,L){
   const best=store.get('sc:'+id,null);if(best)root.querySelector('[data-best]').textContent=`Lần tốt nhất: ${best}`;
   const self={};
   root.querySelector('[data-key]').onclick=()=>root.querySelectorAll('.key').forEach(k=>k.classList.toggle('on'));
-  root.querySelector('[data-reset]').onclick=()=>{const p=root.parentNode,tmp=document.createElement('div');tmp.innerHTML=exHTML(x,id);p.replaceChild(tmp.firstElementChild,root);bindEx(x,id,L)};
+  root.querySelector('[data-reset]').onclick=()=>{store.set('dr:'+id,null);const p=root.parentNode,tmp=document.createElement('div');tmp.innerHTML=exHTML(x,id);p.replaceChild(tmp.firstElementChild,root);bindEx(x,id,L)};
   if(x.type==='order')root.querySelectorAll('.it').forEach(it=>{const built=it.querySelector('.built');
     it.querySelectorAll(':scope > div:first-child .tok').forEach(t=>t.onclick=()=>{t.classList.add('used');const c=t.cloneNode(true);c.classList.remove('used');c.onclick=()=>{t.classList.remove('used');c.remove()};built.appendChild(c)})});
   if(x.type==='match')root.querySelectorAll('.it').forEach(it=>{const s=x.sets[+it.dataset.si];let sel=null;it._found=new Set;it._miss=0;
@@ -2450,11 +2454,29 @@ function bindEx(x,id,L){
     if(!v.trim()){fb.className='fb bad';fb.textContent='Bạn chưa viết gì.';return}
     if(it.a.some(a=>normZh(a)===normZh(v))){self[i]=1;fb.className='fb good';fb.textContent='✓ Trùng khớp đáp án.';box.querySelector('.selfmark').hidden=true}
     else{fb.className='fb';fb.textContent='So với đáp án gợi ý rồi tự đánh giá:';box.querySelector('.key').classList.add('on');const sm=box.querySelector('.selfmark');sm.hidden=false;sm.querySelectorAll('button').forEach(z=>z.onclick=()=>{self[i]=+z.dataset.sm;sm.querySelectorAll('button').forEach(q=>q.classList.toggle('ok',q===z))})}});
+
+  // ---- Lưu nháp: tự lưu mỗi khi gõ/chọn, và nút 💾 Lưu nháp ----
+  const fields=()=>[...root.querySelectorAll('input.inp,input.blank,select.blank,textarea')];
+  const collect=()=>({f:fields().map(e=>e.value),o:[...root.querySelectorAll('.it')].map(it=>[...it.querySelectorAll('.built .tok')].map(t=>+t.dataset.j)),t:Date.now()});
+  const hasWork=d=>d.f.some(v=>String(v).trim())||d.o.some(a=>a.length);
+  const hhmm=t=>{const d=new Date(t);return String(d.getHours()).padStart(2,'0')+':'+String(d.getMinutes()).padStart(2,'0')};
+  const dmsg=root.querySelector('[data-dmsg]');
+  const saveDraft=(manual)=>{if(!root.isConnected)return;const d=collect();if(!hasWork(d)){store.set('dr:'+id,null);return}store.set('dr:'+id,d);if(dmsg)dmsg.textContent=(manual?'✓ Đã lưu nháp lúc ':'Đã tự lưu nháp lúc ')+hhmm(d.t)};
+  let dt;const autoSave=()=>{clearTimeout(dt);dt=setTimeout(()=>saveDraft(false),600)};
+  const dr=store.get('dr:'+id,null);
+  if(dr){const F=fields();(dr.f||[]).forEach((v,i)=>{if(F[i]&&v!=null)F[i].value=v});
+    if(x.type==='order')(dr.o||[]).forEach((seq,i)=>{const it=root.querySelectorAll('.it')[i];if(!it)return;seq.forEach(j=>{const t=it.querySelector(`:scope > div:first-child .tok[data-j="${j}"]:not(.used)`);if(t)t.onclick()})});
+    root.querySelectorAll('input.blank').forEach(t=>{if(t.value)t.style.width=Math.min(14,Math.max(6.5,[...t.value].length*1.15+1.5))+'em'});
+    if(dmsg&&dr.t)dmsg.textContent='↺ Đã mở lại bản nháp lưu lúc '+hhmm(dr.t)}
+  root.addEventListener('input',autoSave);root.addEventListener('change',autoSave);
+  root.addEventListener('click',e=>{if(e.target.closest('.tok'))autoSave()});
+  root.querySelector('[data-draft]').onclick=()=>{const d=collect();if(!hasWork(d)){dmsg.textContent='Chưa có gì để lưu.';return}saveDraft(true)};
+  window.addEventListener('pagehide',()=>{if(!root.isConnected)return;const d=collect();if(hasWork(d))store.set('dr:'+id,d)});
   const touch=()=>{if(!root._t0)root._t0=Date.now()};root.addEventListener('input',touch);root.addEventListener('click',e=>{if(!e.target.closest('[data-grade],[data-key],[data-reset]'))touch()});
   root.querySelector('[data-grade]').onclick=()=>{
     let ok=0,tot=0;
     if(x.type==='pinyin')root.querySelectorAll('.inp').forEach(inp=>{const it=x.items[+inp.dataset.i];tot++;const r=pyCheck(inp.value,it[1]);const fb=inp.parentNode.querySelector('.fb');inp.classList.toggle('right',r==='ok');inp.classList.toggle('wrong',r!=='ok');
-      fb.className='fb '+(r==='ok'?'good':'bad');fb.textContent=r==='ok'?'✓':r==='tone'?'Sai thanh điệu → '+it[1]:'✗ '+it[1];if(r==='ok')ok++});
+      fb.className='fb '+(r==='ok'?'good':'bad');fb.textContent=r==='ok'?'✓':r==='tone'?'✗ Thiếu hoặc sai thanh điệu → '+it[1]:'✗ '+it[1];if(r==='ok')ok++});
     if(x.type==='colloc')root.querySelectorAll('.inp').forEach(inp=>{const it=x.items[+inp.dataset.i];tot++;const v=normZh(inp.value);const fb=inp.parentNode.querySelector('.fb');
       const good=v&&it[2].some(a=>normZh(a)===v);inp.classList.toggle('right',good);inp.classList.toggle('wrong',!good);
       fb.className='fb '+(good?'good':'bad');fb.textContent=good?'✓':(v?'Chưa có trong đáp án; gợi ý: ':'Gợi ý: ')+it[2].slice(0,3).join(', ');if(good)ok++});
@@ -2471,7 +2493,8 @@ function bindEx(x,id,L){
 }
 
 // ================== BÀI TẬP BỔ TRỢ ==================
-const HAS_REV=typeof REVIEW!=='undefined';
+const WB_ON=false; // Bài tập bổ trợ làm trên giấy → tắt tab
+const HAS_REV=WB_ON&&typeof REVIEW!=='undefined';
 function wbPick(cur){return `<div class="lpick">${ALL_NOS.map(n=>`<button data-l="${n}" class="${n===cur?'act':''}" ${LESSONS.find(l=>l.no===n)?'':'disabled'}>${n}</button>`).join('')}${HAS_REV?`<button data-l="31" class="rev ${cur===31?'act':''}">Tổng ôn</button>`:''}</div>`}
 function renderWB(){
   let wl=store.get('wbL',curL);if(wl!==31&&!LESSONS.find(l=>l.no===wl))wl=curL;if(wl===31&&!HAS_REV)wl=curL;
@@ -2593,14 +2616,14 @@ function buildReport(name,cls,sid){
   const at=Date.now();
   const lessons=(HAS_REV?[...LESSONS,REVIEW]:LESSONS).map(L=>{const ids=Object.keys(LOG).filter(k=>LOG[k].L===L.no);
     const agg=k=>{const r=ids.filter(i=>LOG[i].k===k).map(i=>LOG[i]);return {ok:r.reduce((a,x)=>a+x.best,0),tot:r.reduce((a,x)=>a+x.tot,0),done:r.length,sec:r.reduce((a,x)=>a+x.sec,0),att:r.reduce((a,x)=>a+x.att,0)}};
-    return {L:L.no,sgk:Object.assign(agg('SGK'),{all:L.ex.length}),bt:Object.assign(agg('BT'),{all:L.wb.length}),lt:Object.assign(agg('LT'),{all:QT.length}),kn:L.words.filter(w=>known.has(w.id)).length,nw:L.words.length}});
+    return {L:L.no,sgk:Object.assign(agg('SGK'),{all:L.ex.length}),bt:Object.assign(agg('BT'),{all:WB_ON?L.wb.length:0}),lt:Object.assign(agg('LT'),{all:QT.length}),kn:L.words.filter(w=>known.has(w.id)).length,nw:L.words.length}});
   const items=Object.entries(LOG).map(([id,r])=>[id,r.L,r.k,String(r.h||'').slice(0,60),r.best,r.tot,r.att,r.sec,r.last]);
   const data={v:1,app:'TH2',name,cls,sid,at,lessons,items};
   const json=JSON.stringify(data);const code='TH2R1.'+b64e(json)+'.'+hash32(REPORT_SALT+json);
   const lines=[`📤 BÁO CÁO KẾT QUẢ · TỔNG HỢP 2`,`Họ tên: ${name}`,`Lớp: ${cls}${sid?` · MSSV: ${sid}`:''}`,`Nộp lúc: ${fmtDate(at)}`,''];
   lessons.forEach(l=>{const any=l.sgk.done+l.bt.done+l.lt.done;if(!any&&!l.kn)return;
     const part=(n,x)=>x.done?`${n} ${x.ok}/${x.tot} (${x.done}/${x.all} bài)`:`${n} chưa làm`;
-    lines.push(`${l.L===31?'Tổng ôn':'Bài '+l.L}: ${part('SGK',l.sgk)} · ${part('Bổ trợ',l.bt)} · ${l.lt.done?`Luyện tập ${l.lt.done} lượt`:'Luyện tập chưa làm'} · ${fmtSec(l.sgk.sec+l.bt.sec+l.lt.sec)} · nhớ ${l.kn}/${l.nw} từ`)});
+    lines.push(`${l.L===31?'Tổng ôn':'Bài '+l.L}: ${part('SGK',l.sgk)} · ${WB_ON?part('Bổ trợ',l.bt)+' · ':''}${l.lt.done?`Luyện tập ${l.lt.done} lượt`:'Luyện tập chưa làm'} · ${fmtSec(l.sgk.sec+l.bt.sec+l.lt.sec)} · nhớ ${l.kn}/${l.nw} từ`)});
   if(lines.length===5)lines.push('(Chưa làm bài nào)');
   lines.push('','Mã nộp bài (cô dán vào Bảng theo dõi lớp):',code);
   return {text:lines.join('\n'),code,fname:`${name}_${cls}_TongHop2.txt`.replace(/[\\/:*?"<>|\s]+/g,'_')};
@@ -2634,7 +2657,7 @@ function audioCheck(){const tr=Object.keys(typeof AUDIO!=='undefined'?AUDIO:{})[
     if(ok)setTimeout(()=>{b.hidden=true},6000)};
   a.addEventListener('loadedmetadata',()=>done(true));a.addEventListener('error',()=>done(false));setTimeout(()=>done(false),6000);a.src='audio/'+tr+'.mp3';a.load()}
 // ================== KHỞI ĐỘNG ==================
-const h=(location.hash||'').slice(1);go(['lesson','vocab','flash','grammar','quiz','wb'].includes(h)?h:'lesson');
+const h=(location.hash||'').slice(1);go(['lesson','vocab','flash','grammar','quiz'].concat(WB_ON?['wb']:[]).includes(h)?h:'lesson');
 audioCheck();
 
 document.addEventListener('input',e=>{const t=e.target;if(t.matches&&t.matches('input.blank')){t.style.width=Math.min(14,Math.max(6.5,[...t.value].length*1.15+1.5))+'em'}});
